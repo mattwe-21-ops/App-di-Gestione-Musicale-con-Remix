@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Mattwe Pro - Advanced Remix Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .truncate-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .list-row {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .list-row:hover { background: rgba(30, 41, 59, 0.5); }
+
+        .remix-connection-card {
+            background: rgba(30, 41, 59, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Sidebar Styles */
+        #sidebar { 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            width: 320px; 
+        }
+        
+        /* Forza la visibilità su desktop */
+        @media (min-width: 1024px) {
+            #sidebar { transform: translateX(0) !important; }
+            #main-content { margin-left: 320px; }
+        }
+
+        /* Gestione Mobile */
+        @media (max-width: 1023px) {
+            #sidebar { transform: translateX(-100%); }
+            .sidebar-open #sidebar { transform: translateX(0); }
+            #main-content { margin-left: 0; }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 14px;
+            transition: all 0.2s ease;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        .nav-btn.active {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        .nav-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.07);
+            color: white;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Overlay per mobile -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm hidden lg:hidden"></div>
+
+    <!-- Sidebar fissa per desktop, a comparsa per mobile -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full glass-panel z-50 border-r border-white/10 flex flex-col overflow-hidden">
+        <div class="p-8 border-b border-white/10 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"></path></svg>
+                </div>
+                <span class="font-bold text-xl tracking-tight text-white">Music Mattwe</span>
+            </div>
+            <!-- Pulsante chiusura solo mobile -->
+            <button onclick="toggleSidebar()" class="lg:hidden p-2 text-slate-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4 ml-4">Menu Navigazione</p>
+                <nav class="space-y-2">
+                    <button onclick="switchView('library')" id="nav-library" class="nav-btn active">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        Tutti i Brani
+                    </button>
+                    <button onclick="switchView('remix')" id="nav-remix" class="nav-btn">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                        Analisi Remix
+                    </button>
+                    <button onclick="switchView('genres')" id="nav-genres" class="nav-btn">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                        Gestione Generi
+                    </button>
+                </nav>
+            </div>
+
+            <div class="bg-blue-600/5 p-6 rounded-2xl border border-blue-500/10 space-y-4">
+                <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest text-center">Riepilogo Database</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <p id="statSongs" class="text-2xl font-bold text-white">0</p>
+                        <p class="text-[9px] text-slate-500 uppercase font-medium">Tracce</p>
+                    </div>
+                    <div class="text-center border-l border-white/10">
+                        <p id="statRemix" class="text-2xl font-bold text-blue-500">0</p>
+                        <p class="text-[9px] text-slate-500 uppercase font-medium">Relazioni</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6 border-t border-white/10 mt-auto">
+            <div class="flex items-center gap-3 px-4 py-3 bg-slate-900/50 rounded-xl border border-white/5">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-[10px] font-bold text-white shadow-lg">M</div>
+                <div>
+                    <p class="text-xs font-bold text-white">Mattwe Admin</p>
+                    <p class="text-[10px] text-slate-500">Account Pro</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main id="main-content" class="transition-all duration-300 min-h-screen">
+        <header class="h-20 glass-panel border-b border-white/10 px-8 flex items-center justify-between sticky top-0 z-30">
+            <div class="flex items-center gap-6">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl transition shadow-lg">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h1 id="view-title" class="text-xl font-bold text-white tracking-tight">Libreria Musicale</h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition active:scale-95 shadow-lg shadow-blue-900/40">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Aggiungi Brano
+                </button>
+            </div>
+        </header>
+
+        <div class="p-6 lg:p-12">
+            <!-- Barra di ricerca e Filtri -->
+            <div class="mb-10 space-y-6">
+                <div class="flex flex-wrap items-center gap-4 bg-slate-900/40 p-5 rounded-3xl border border-white/5 backdrop-blur-xl">
+                    <div class="flex items-center gap-3 flex-1 min-w-[280px] bg-slate-800/50 px-4 py-3 rounded-2xl border border-white/5">
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input id="globalSearch" type="text" oninput="renderAll()" placeholder="Cerca per titolo, artista o remix..." class="bg-transparent border-none outline-none text-white w-full placeholder:text-slate-600">
+                    </div>
+                    
+                    <div id="remixFilters" class="hidden flex items-center gap-3">
+                        <select id="filterGenre1" onchange="renderAll()" class="bg-slate-800 text-xs border border-white/10 rounded-xl px-4 py-3 outline-none text-blue-400 font-bold focus:ring-1 focus:ring-blue-500 cursor-pointer">
+                            <option value="All">Qualsiasi Genere 1</option>
+                        </select>
+                        <div class="text-slate-600 font-bold">↔</div>
+                        <select id="filterGenre2" onchange="renderAll()" class="bg-slate-800 text-xs border border-white/10 rounded-xl px-4 py-3 outline-none text-purple-400 font-bold focus:ring-1 focus:ring-purple-500 cursor-pointer">
+                            <option value="All">Qualsiasi Genere 2</option>
+                        </select>
+                    </div>
+
+                    <select id="filterGenre" onchange="renderAll()" class="bg-slate-800 text-xs border border-white/10 rounded-xl px-4 py-3 outline-none font-medium text-white cursor-pointer">
+                        <option value="All">Tutti i Generi</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="view-library" class="space-y-6">
+                <div id="songsContainer"></div>
+            </div>
+
+            <div id="view-remix" class="hidden space-y-6">
+                <div id="remixConnectionsContainer" class="grid grid-cols-1 gap-8"></div>
+            </div>
+
+            <div id="view-genres" class="hidden max-w-2xl mx-auto">
+                <div class="glass-panel p-10 rounded-[2.5rem] border border-white/10">
+                    <h2 class="text-2xl font-bold mb-8 text-center text-white">Configurazione Generi</h2>
+                    <div class="flex gap-3 mb-10">
+                        <input id="newGenreInput" type="text" placeholder="Esempio: Techno, Afro House..." class="flex-1 bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                        <button onclick="addGenre()" class="bg-blue-600 hover:bg-blue-500 px-8 rounded-2xl font-bold transition shadow-lg">Aggiungi</button>
+                    </div>
+                    <div id="genresContainer" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Gestione Brano -->
+    <div id="addModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-[100] backdrop-blur-2xl">
+        <div class="glass-panel p-10 rounded-[3rem] max-w-xl w-full border border-white/10 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <h3 id="modalTitle" class="text-2xl font-bold mb-8 text-white">Dettagli Canzone</h3>
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-slate-500 ml-1">Titolo Brano</label>
+                        <input id="songTitle" type="text" class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-slate-500 ml-1">Artista</label>
+                        <input id="songArtist" type="text" class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="text-[10px] uppercase font-bold text-slate-500 ml-1">Genere Primario</label>
+                    <select id="songGenre" class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none cursor-pointer"></select>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] uppercase font-bold text-slate-500 ml-1">Relazioni Remix (Bidirezionali)</label>
+                    <select id="songLinks" multiple class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 text-white h-48 custom-scrollbar outline-none focus:ring-1 focus:ring-blue-500"></select>
+                    <p class="text-[9px] text-slate-500 mt-2 px-1">Tieni premuto CTRL o CMD per selezionare più brani correlati.</p>
+                </div>
+
+                <div class="flex gap-4 pt-6">
+                    <button onclick="closeAddModal()" class="flex-1 text-slate-400 font-bold hover:text-white transition py-4">Annulla</button>
+                    <button onclick="saveSong()" class="flex-[2] bg-blue-600 text-white font-bold py-4 px-8 rounded-2xl shadow-xl shadow-blue-600/20 active:scale-95 transition">Salva Informazioni</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none transition-all duration-500 z-[110]">
+        <div class="bg-blue-600 text-white px-10 py-4 rounded-2xl shadow-2xl font-bold flex items-center gap-3" id="toastMsg"></div>
+    </div>
+
+    <script>
+        let songs = JSON.parse(localStorage.getItem('ml_v5_songs')) || [];
+        let genres = JSON.parse(localStorage.getItem('ml_v5_genres')) || ['Deep House', 'Techno', 'Pop', 'Melodic Techno', 'Indie Dance'];
+        let currentView = 'library';
+        let currentEditingId = null;
+
+        function init() {
+            renderAll();
+            renderGenres();
+            updateSelects();
+        }
+
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-open');
+            const overlay = document.getElementById('sidebar-overlay');
+            overlay.classList.toggle('hidden');
+        }
+
+        function switchView(view) {
+            currentView = view;
+            document.getElementById('view-library').classList.toggle('hidden', view !== 'library');
+            document.getElementById('view-remix').classList.toggle('hidden', view !== 'remix');
+            document.getElementById('view-genres').classList.toggle('hidden', view !== 'genres');
+            
+            document.getElementById('remixFilters').classList.toggle('hidden', view !== 'remix');
+            document.getElementById('filterGenre').classList.toggle('hidden', view === 'remix');
+            
+            document.getElementById('view-title').innerText = { 
+                library: 'Libreria Musicale', 
+                remix: 'Analisi Remix', 
+                genres: 'Configurazione Generi' 
+            }[view];
+            
+            ['library', 'remix', 'genres'].forEach(v => {
+                const btn = document.getElementById(`nav-${v}`);
+                if(v === view) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            // Chiudi sidebar su mobile dopo la selezione
+            if (window.innerWidth < 1024) {
+                document.body.classList.remove('sidebar-open');
+                document.getElementById('sidebar-overlay').classList.add('hidden');
+            }
+
+            renderAll();
+        }
+
+        function renderAll() {
+            const search = document.getElementById('globalSearch').value.toLowerCase();
+            const genre = document.getElementById('filterGenre').value;
+
+            if (currentView === 'library') {
+                const filtered = songs.filter(s => {
+                    const matchesText = s.title.toLowerCase().includes(search) || s.artist.toLowerCase().includes(search);
+                    const matchesGenre = genre === 'All' || s.genre === genre;
+                    return matchesText && matchesGenre;
+                });
+                renderLibrary(filtered);
+            } else if (currentView === 'remix') {
+                renderRemixFlow(search);
+            }
+            
+            updateStats();
+            localStorage.setItem('ml_v5_songs', JSON.stringify(songs));
+        }
+
+        function renderLibrary(list) {
+            const container = document.getElementById('songsContainer');
+            if (list.length === 0) {
+                container.innerHTML = `<div class="py-20 text-center text-slate-600 bg-slate-900/20 rounded-3xl border border-white/5 italic">Nessun brano trovato nella libreria.</div>`;
+                return;
+            }
+            container.innerHTML = `
+            <div class="glass-panel rounded-[2rem] overflow-hidden border border-white/5">
+                <div class="grid grid-cols-12 gap-4 px-8 py-5 bg-white/5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 border-b border-white/5">
+                    <div class="col-span-6 lg:col-span-5">Dettagli Brano</div>
+                    <div class="hidden lg:block col-span-2 text-center">Genere</div>
+                    <div class="col-span-4 lg:col-span-3 text-center lg:text-left">Remix</div>
+                    <div class="col-span-2 text-right">Azioni</div>
+                </div>
+                <div class="divide-y divide-white/5">${list.map(s => {
+                    const linksCount = (s.linkedIds || []).length;
+                    return `
+                    <div class="list-row px-8 py-5 grid grid-cols-12 gap-4 items-center">
+                        <div class="col-span-6 lg:col-span-5 min-w-0">
+                            <span class="font-bold text-white text-base truncate-text">${s.title}</span>
+                            <span class="text-xs text-slate-500 truncate-text mt-1 font-medium">${s.artist}</span>
+                        </div>
+                        <div class="hidden lg:block col-span-2 text-center">
+                            <span class="text-[9px] font-bold px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/10 uppercase">${s.genre}</span>
+                        </div>
+                        <div class="col-span-4 lg:col-span-3 text-center lg:text-left">
+                            ${linksCount > 0 ? `
+                            <div class="flex items-center justify-center lg:justify-start gap-2">
+                                <span class="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(37,99,235,0.5)]"></span>
+                                <span class="text-xs text-blue-300 font-bold">${linksCount} Collegamenti</span>
+                            </div>` : '<span class="text-[10px] text-slate-600">Traccia Unica</span>'}
+                        </div>
+                        <div class="col-span-2 text-right flex justify-end gap-1">
+                            <button onclick="openEditModal('${s.id}')" class="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2"/></svg>
+                            </button>
+                            <button onclick="deleteSong('${s.id}')" class="p-2 text-slate-600 hover:text-red-500 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2"/></svg>
+                            </button>
+                        </div>
+                    </div>`;
+                }).join('')}</div>
+            </div>`;
+        }
+
+        function renderRemixFlow(search) {
+            const container = document.getElementById('remixConnectionsContainer');
+            const g1 = document.getElementById('filterGenre1').value;
+            const g2 = document.getElementById('filterGenre2').value;
+
+            const seenPairs = new Set();
+            const pairs = [];
+
+            songs.forEach(s => {
+                (s.linkedIds || []).forEach(lid => {
+                    const other = songs.find(o => o.id === lid);
+                    if (other) {
+                        const pairId = [s.id, other.id].sort().join('-');
+                        if (!seenPairs.has(pairId)) {
+                            seenPairs.add(pairId);
+                            pairs.push({ a: s, b: other });
+                        }
+                    }
+                });
+            });
+
+            const filtered = pairs.filter(p => {
+                const textMatch = p.a.title.toLowerCase().includes(search) || p.b.title.toLowerCase().includes(search) ||
+                                 p.a.artist.toLowerCase().includes(search) || p.b.artist.toLowerCase().includes(search);
+                
+                const genreMatch = (g1 === 'All' || p.a.genre === g1 || p.b.genre === g1) && 
+                                  (g2 === 'All' || p.a.genre === g2 || p.b.genre === g2);
+                
+                return textMatch && genreMatch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="py-20 text-center text-slate-500 italic">Nessuna connessione remix trovata con i filtri attuali.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(p => `
+                <div class="remix-connection-card flex flex-col lg:flex-row items-center gap-8 group">
+                    <div class="flex-1 w-full bg-slate-900/60 p-7 rounded-[2rem] border border-white/5 hover:border-blue-500/40 transition">
+                        <div class="flex justify-between items-center mb-5">
+                             <span class="text-[8px] font-bold text-blue-500 uppercase tracking-widest bg-blue-500/10 px-2.5 py-1 rounded">Brano A</span>
+                             <button onclick="openEditModal('${p.a.id}')" class="text-[10px] text-slate-500 hover:text-white font-bold transition">EDIT</button>
+                        </div>
+                        <h5 class="font-bold text-white text-lg truncate-text">${p.a.title}</h5>
+                        <p class="text-sm text-slate-400 mt-1">${p.a.artist}</p>
+                        <div class="mt-6 flex items-center gap-2">
+                            <span class="text-[10px] font-bold px-3 py-1 bg-blue-500/10 text-blue-400 rounded-md uppercase">${p.a.genre}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="p-5 bg-blue-600/10 rounded-full border border-blue-600/20 shadow-[0_0_20px_rgba(37,99,235,0.1)] group-hover:scale-110 transition duration-500">
+                            <svg class="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                        </div>
+                        <span class="text-[9px] font-black text-slate-600 tracking-tighter uppercase">Remix Link</span>
+                    </div>
+
+                    <div class="flex-1 w-full bg-slate-900/60 p-7 rounded-[2rem] border border-white/5 hover:border-purple-500/40 transition">
+                        <div class="flex justify-between items-center mb-5">
+                             <span class="text-[8px] font-bold text-purple-500 uppercase tracking-widest bg-purple-500/10 px-2.5 py-1 rounded">Brano B</span>
+                             <button onclick="openEditModal('${p.b.id}')" class="text-[10px] text-slate-500 hover:text-white font-bold transition">EDIT</button>
+                        </div>
+                        <h5 class="font-bold text-white text-lg truncate-text">${p.b.title}</h5>
+                        <p class="text-sm text-slate-400 mt-1">${p.b.artist}</p>
+                        <div class="mt-6 flex items-center gap-2">
+                            <span class="text-[10px] font-bold px-3 py-1 bg-purple-500/10 text-purple-400 rounded-md uppercase">${p.b.genre}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderGenres() {
+            const container = document.getElementById('genresContainer');
+            container.innerHTML = genres.map(g => `
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/5 flex justify-between group items-center hover:bg-white/10 transition cursor-default">
+                    <span class="text-sm font-semibold text-slate-200">${g}</span>
+                    <button onclick="deleteGenre('${g}')" class="text-red-500 opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500/10 rounded-xl transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5"/></svg>
+                    </button>
+                </div>`).join('');
+            updateSelects();
+            localStorage.setItem('ml_v5_genres', JSON.stringify(genres));
+        }
+
+        function updateSelects() {
+            const gOpt = genres.map(g => `<option value="${g}">${g}</option>`).join('');
+            document.getElementById('songGenre').innerHTML = gOpt;
+            document.getElementById('filterGenre').innerHTML = '<option value="All">Tutti i Generi</option>' + gOpt;
+            document.getElementById('filterGenre1').innerHTML = '<option value="All">Qualsiasi Genere 1</option>' + gOpt;
+            document.getElementById('filterGenre2').innerHTML = '<option value="All">Qualsiasi Genere 2</option>' + gOpt;
+        }
+
+        function saveSong() {
+            const title = document.getElementById('songTitle').value.trim();
+            const artist = document.getElementById('songArtist').value.trim();
+            const genre = document.getElementById('songGenre').value;
+            const selectedLinks = Array.from(document.getElementById('songLinks').selectedOptions).map(o => o.value);
+
+            if(!title || !artist) return;
+
+            let songId;
+            if (currentEditingId) {
+                songId = currentEditingId;
+                const idx = songs.findIndex(s => s.id === songId);
+                
+                const oldLinks = songs[idx].linkedIds || [];
+                oldLinks.forEach(oid => {
+                    const other = songs.find(o => o.id === oid);
+                    if (other) other.linkedIds = (other.linkedIds || []).filter(lid => lid !== songId);
+                });
+
+                songs[idx] = { ...songs[idx], title, artist, genre, linkedIds: selectedLinks };
+                showToast("Modifiche salvate");
+            } else {
+                songId = 's_' + Date.now();
+                songs.unshift({ id: songId, title, artist, genre, linkedIds: selectedLinks });
+                showToast("Brano aggiunto");
+            }
+
+            selectedLinks.forEach(lid => {
+                const other = songs.find(o => o.id === lid);
+                if (other) {
+                    if (!other.linkedIds) other.linkedIds = [];
+                    if (!other.linkedIds.includes(songId)) other.linkedIds.push(songId);
+                }
+            });
+
+            closeAddModal(); renderAll();
+        }
+
+        function openAddModal() {
+            currentEditingId = null;
+            document.getElementById('modalTitle').innerText = "Nuova Traccia";
+            document.getElementById('songTitle').value = '';
+            document.getElementById('songArtist').value = '';
+            updateLinksSelect();
+            document.getElementById('addModal').classList.remove('hidden');
+        }
+
+        function openEditModal(id) {
+            currentEditingId = id;
+            const s = songs.find(x => x.id === id);
+            if(!s) return;
+            document.getElementById('modalTitle').innerText = "Modifica Traccia";
+            document.getElementById('songTitle').value = s.title;
+            document.getElementById('songArtist').value = s.artist;
+            document.getElementById('songGenre').value = s.genre;
+            updateLinksSelect(id); // Escludi se stesso
+            
+            const select = document.getElementById('songLinks');
+            const links = s.linkedIds || [];
+            Array.from(select.options).forEach(opt => opt.selected = links.includes(opt.value));
+
+            document.getElementById('addModal').classList.remove('hidden');
+        }
+
+        function updateLinksSelect(excludeId = null) {
+            const select = document.getElementById('songLinks');
+            select.innerHTML = songs
+                .filter(s => s.id !== excludeId)
+                .map(s => `<option value="${s.id}">${s.title} — ${s.artist}</option>`).join('');
+        }
+
+        function deleteSong(id) {
+            songs.forEach(s => { if(s.linkedIds) s.linkedIds = s.linkedIds.filter(lid => lid !== id); });
+            songs = songs.filter(s => s.id !== id);
+            renderAll();
+            showToast("Traccia eliminata");
+        }
+
+        function addGenre() {
+            const v = document.getElementById('newGenreInput').value.trim();
+            if(v && !genres.includes(v)) { genres.push(v); document.getElementById('newGenreInput').value=''; renderGenres(); }
+        }
+
+        function deleteGenre(g) { genres = genres.filter(x => x !== g); renderGenres(); }
+
+        function closeAddModal() { document.getElementById('addModal').classList.add('hidden'); }
+
+        function updateStats() {
+            document.getElementById('statSongs').innerText = songs.length;
+            const seen = new Set();
+            let count = 0;
+            songs.forEach(s => (s.linkedIds || []).forEach(lid => {
+                const p = [s.id, lid].sort().join('-');
+                if(!seen.has(p)) { seen.add(p); count++; }
+            }));
+            document.getElementById('statRemix').innerText = count;
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            t.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 2500);
+        }
+
+        init();
+    </script>
+</body>
+</html>
