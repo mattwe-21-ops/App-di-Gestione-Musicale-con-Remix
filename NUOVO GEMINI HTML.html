@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Remix Organizer Pro</title>
+    <!-- Collegamento al file CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Barra Laterale -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-area">
+                    <h1>DJ<br>PRO</h1>
+                </div>
+                <button class="sidebar-toggle-internal" id="sidebarToggle" title="Contrai Menu">☰</button>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="songs" data-tooltip="Libreria">
+                    <span class="icon">♫</span>
+                    <span class="label">La Tua Libreria</span>
+                </button>
+                <button class="nav-item" data-tab="add" data-tooltip="Aggiungi">
+                    <span class="icon">+</span>
+                    <span class="label">Aggiungi Brano</span>
+                </button>
+                <button class="nav-item" data-tab="remix" data-tooltip="Remix">
+                    <span class="icon">⚡</span>
+                    <span class="label">Crea Remix</span>
+                </button>
+                <button class="nav-item" data-tab="export" data-tooltip="Dati">
+                    <span class="icon">↕</span>
+                    <span class="label">Dati e Backup</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Area Principale -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Cerca canzoni, artisti o BPM...">
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Sezione Libreria -->
+                <div id="songs-tab" class="tab-content active">
+                    <div class="section-header">
+                        <h2>Libreria Musicale</h2>
+                        <span id="songCount" class="badge">0 Brani</span>
+                    </div>
+                    <div id="songsList" class="songs-grid">
+                        <!-- Le canzoni verranno inserite qui da JS -->
+                    </div>
+                </div>
+
+                <!-- Sezione Aggiungi Brano -->
+                <div id="add-tab" class="tab-content">
+                    <h2>Nuovo Brano</h2>
+                    <form id="songForm" class="form-card">
+                        <div class="form-group">
+                            <label>Titolo (obbligatorio):</label>
+                            <input type="text" id="songTitle" required placeholder="Es. Midnight Sun">
+                        </div>
+                        <div class="form-group">
+                            <label>Artista (obbligatorio):</label>
+                            <input type="text" id="artist" required placeholder="Es. DJ Neon">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label>BPM:</label>
+                                <input type="number" id="bpm" min="0" placeholder="Es. 128">
+                            </div>
+                            <div class="form-group half">
+                                <label>Chiave Armonica:</label>
+                                <input type="text" id="key" placeholder="Es. 4A">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>File Audio/Video:</label>
+                            <div class="file-input-wrapper" id="dropZone">
+                                <input type="file" id="mediaFile" accept="audio/*,video/*">
+                                <span class="file-label-text" id="fileLabel">Trascina qui o clicca per caricare (MP3, MP4, WAV)</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="primary-btn">Salva in Libreria</button>
+                    </form>
+                </div>
+
+                <!-- Sezione Remix/Connessioni -->
+                <div id="remix-tab" class="tab-content">
+                    <h2>Connetti Brani per Mix</h2>
+                    <form id="linkForm" class="form-card">
+                        <div class="form-group">
+                            <label>Traccia Base:</label>
+                            <select id="sourceSong" required>
+                                <option value="">Seleziona una traccia...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Traccia da Mixare:</label>
+                            <select id="linkedSong" required>
+                                <option value="">Seleziona una traccia...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Note sul Passaggio:</label>
+                            <textarea id="remixNotes" rows="4" placeholder="Es. Entrare al minuto 2:30 con filtro passa-alto..."></textarea>
+                        </div>
+                        <button type="submit" class="primary-btn">Crea Collegamento</button>
+                    </form>
+                    <div id="linksContainer" class="links-list">
+                        <!-- Collegamenti remix visualizzati qui -->
+                    </div>
+                </div>
+
+                <!-- Sezione Backup -->
+                <div id="export-tab" class="tab-content">
+                    <h2>Gestione Dati</h2>
+                    <div class="grid-2">
+                        <div class="form-card">
+                            <h3>Esporta Backup</h3>
+                            <p>Scarica tutta la tua libreria in un file JSON per non perdere i dati.</p>
+                            <button id="exportBtn" class="action-btn">Esporta .JSON</button>
+                        </div>
+                        <div class="form-card">
+                            <h3>Importa Backup</h3>
+                            <p>Ripristina la libreria da un file precedentemente salvato.</p>
+                            <input type="file" id="importFile" accept=".json" style="display: none;">
+                            <button id="importBtn" class="action-btn secondary">Carica Backup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notifiche -->
+    <div id="toast" class="toast">Operazione completata!</div>
+
+    <!-- Collegamento al file JS -->
+    <script src="script.js"></script>
+</body>
+</html>
